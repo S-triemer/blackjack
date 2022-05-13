@@ -21,7 +21,7 @@ function getDeckID() {
     });
 }
 
-function drawACard(who) {
+async function drawACard(who) {
   fetch(`https://deckofcardsapi.com/api/deck/${deckID}/draw/?count=1`)
     .then((res) => res.json())
     .then((data) => {
@@ -104,10 +104,10 @@ btnStop.addEventListener("click", () => {
 });
 
 //Needs an async fix
-function dealerKI() {
+async function dealerKI() {
   for (let i = Dealer.score; i <= 16; i = i + Dealer.score) {
     console.log("counter", i);
     console.log("DealerScore", Dealer.score);
-    Dealer.draw();
+    await Dealer.draw();
   }
 }
