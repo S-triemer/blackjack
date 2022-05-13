@@ -4,6 +4,7 @@ let deckID = getDeckID();
 
 let btnDrawDealer = document.querySelector(".btnDrawD");
 let btnDrawPlayer = document.querySelector(".btnDrawP");
+let btnStop = document.querySelector(".btnStop");
 
 let player = document.querySelector(".cards-player1");
 let dealer = document.querySelector(".cards-dealer");
@@ -24,7 +25,6 @@ function drawACard(who) {
   fetch(`https://deckofcardsapi.com/api/deck/${deckID}/draw/?count=1`)
     .then((res) => res.json())
     .then((data) => {
-      console.log(Player.score);
       let img = createNode("img");
       let cardValue = getCardValue(data.cards[0].value, who);
       img.src = data.cards[0].image;
@@ -34,12 +34,10 @@ function drawACard(who) {
       if (who == "dealer") {
         append(dealer, img);
         Dealer.score += cardValue;
+        return Dealer.score;
       } else if (who == "player") {
         append(player, img);
         Player.score += cardValue;
-      }
-      if (Player.score > 21) {
-        console.log("Player loses");
       }
     })
     .catch((err) => {
@@ -47,7 +45,6 @@ function drawACard(who) {
     });
 }
 
-btnDrawDealer.addEventListener("click", () => drawACard("dealer"));
 btnDrawPlayer.addEventListener("click", () => drawACard("player"));
 
 //Helper Functions
@@ -61,18 +58,20 @@ function append(parent, el) {
 
 //Game Logic
 
-let Player = {
-  score: 0,
-  draw: function () {
-    drawACard("player");
-  },
-};
-let Dealer = {
-  score: 0,
-  draw: function () {
-    drawACard("dealer");
-  },
-};
+function MakePlayerDealer(id) {
+  (this.score = 0),
+    (this.id = id),
+    (this.draw = function () {
+      drawACard(this.id);
+    });
+
+  this.calcScore = function () {
+    alert(this.score);
+  };
+}
+
+let Player = new MakePlayerDealer("player");
+let Dealer = new MakePlayerDealer("dealer");
 
 function getCardValue(value, who) {
   if (value == "JACK") {
@@ -82,23 +81,33 @@ function getCardValue(value, who) {
   } else if (value == "KING") {
     return 10;
   } else if (value == "ACE") {
-    //Basic first Idea for handling of aces but what if you overdraw later? can a 11 become a 1?
-    if (checkScore(who) > 10) {
-      console.log(checkScore(who));
-      return 1;
-    } else {
-      console.log(checkScore(who));
-      return 11;
-    }
+    //The Value of Ace (1 or 11) will be calculated when the player stops drawing cards
+    return 0;
   } else {
     return Number(value);
   }
 }
 
-function checkScore(who) {
-  if (who === "player") {
-    return Player.score;
-  } else {
-    return Dealer.score;
+let startBtn = document.querySelector(".start-game");
+let gameInterface = document.querySelector(".game-interface");
+startBtn.addEventListener("click", startGame);
+
+function startGame() {
+  gameInterface.style.display = "block";
+  startBtn.style.display = "none";
+  Dealer.draw();
+  Player.draw();
+}
+
+btnStop.addEventListener("click", () => {
+  dealerKI();
+});
+
+//Needs an async fix
+function dealerKI() {
+  for (let i = Dealer.score; i <= 16; i = i + Dealer.score) {
+    console.log("counter", i);
+    console.log("DealerScore", Dealer.score);
+    Dealer.draw();
   }
 }
